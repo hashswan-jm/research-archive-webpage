@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Archive</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-content">
+            <h1 id="topic-title">Loading...</h1>
+            <div class="survey-info" id="survey-info"></div>
+        </div>
+    </header>
+
+    <!-- Mind Map Section -->
+    <section class="mindmap-section">
+        <div class="section-header">
+            <h2>Topic Mind Map</h2>
+            <div class="mindmap-controls">
+                <button id="expand-all">Expand All</button>
+                <button id="collapse-all">Collapse All</button>
+                <button id="reset-zoom">Reset View</button>
+            </div>
+        </div>
+        <div id="mindmap-container"></div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls-section">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search papers...">
+            <span class="search-icon">&#128269;</span>
+        </div>
+        <div class="category-filters" id="category-filters"></div>
+    </section>
+
+    <!-- Papers Grid -->
+    <section class="papers-section">
+        <div class="section-header">
+            <h2>Papers</h2>
+            <span id="paper-count"></span>
+        </div>
+        <div id="papers-grid"></div>
+    </section>
+
+    <!-- Detail Modal (Slide-out) -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+    <div id="modal-overlay" class="modal-overlay"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
