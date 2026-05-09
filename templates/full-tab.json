@@ -1,0 +1,53 @@
+{
+  "id": "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx",
+  "name": "Diffusion Models Survey",
+  "surveyUrl": "https://arxiv.org/abs/2209.00796",
+  "surveyText": "Optional: full or partial survey text...",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "sections": [
+    {
+      "id": "sec-xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx",
+      "title": "Model Architecture",
+      "paperIds": ["paper-xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"]
+    },
+    {
+      "id": "sec-yyyyyyyy-yyyy-4yyy-yyyy-yyyyyyyyyyyy",
+      "title": "Training Paradigms",
+      "paperIds": ["paper-zzzzzzzz-zzzz-4zzz-zzzz-zzzzzzzzzzzz"]
+    }
+  ],
+  "papers": {
+    "paper-xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx": {
+      "id": "paper-xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx",
+      "title": "Denoising Diffusion Probabilistic Models",
+      "authors": ["Jonathan Ho", "Ajay Jain", "Pieter Abbeel"],
+      "year": 2020,
+      "url": "https://arxiv.org/abs/2006.11239",
+      "content": {
+        "method": "## Method\n\n### Model Architecture\nU-Net with residual blocks...",
+        "training": "## Training Paradigm\nAdam optimizer, learning rate 1e-4...",
+        "datasets": "## Datasets\nCIFAR-10, CelebA-HQ, ImageNet...",
+        "metrics": "## Metrics\n| Dataset | FID | IS |\n|---------|-----|-----|\n| CIFAR-10 | 3.17 | 9.46 |",
+        "ablation": "## Ablation Study\n- Loss type: L_simple outperforms L_vlb\n- Timestep schedule: cosine outperforms linear"
+      },
+      "images": {
+        "modelDiagram": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+      }
+    },
+    "paper-zzzzzzzz-zzzz-4zzz-zzzz-zzzzzzzzzzzz": {
+      "id": "paper-zzzzzzzz-zzzz-4zzz-zzzz-zzzzzzzzzzzz",
+      "title": "Classifier-Free Diffusion Guidance",
+      "authors": ["Jonathan Ho", "Tim Salimans"],
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2207.12598",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    }
+  }
+}

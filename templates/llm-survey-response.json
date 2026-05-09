@@ -1,0 +1,26 @@
+{
+  "topic": "Diffusion Models: A Comprehensive Survey",
+  "sections": [
+    {
+      "title": "Background and Foundations",
+      "papers": [
+        {"title": "Denoising Diffusion Probabilistic Models", "authors": ["Jonathan Ho", "Ajay Jain", "Pieter Abbeel"], "year": 2020, "url": "https://arxiv.org/abs/2006.11239"},
+        {"title": "Deep Unsupervised Learning using Nonequilibrium Thermodynamics", "authors": ["Jascha Sohl-Dickstein", "Eric Weiss", "Niru Maheswaranathan", "Surya Ganguli"], "year": 2015, "url": "https://arxiv.org/abs/1503.03585"}
+      ]
+    },
+    {
+      "title": "Model Architectures",
+      "papers": [
+        {"title": "Diffusion Models Beat GANs on Image Synthesis", "authors": ["Prafulla Dhariwal", "Alex Nichol"], "year": 2021, "url": "https://arxiv.org/abs/2105.05233"},
+        {"title": "Classifier-Free Diffusion Guidance", "authors": ["Jonathan Ho", "Tim Salimans"], "year": 2022, "url": "https://arxiv.org/abs/2207.12598"}
+      ]
+    },
+    {
+      "title": "Applications",
+      "papers": [
+        {"title": "High-Resolution Image Synthesis with Latent Diffusion Models", "authors": ["Robin Rombach", "Andreas Blattmann", "Dominik Lorenz", "Patrick Esser", "Björn Ommer"], "year": 2022, "url": "https://arxiv.org/abs/2112.10752"},
+        {"title": "MotionBERT: A Unified Perspective on Learning Human Motion Representations", "authors": ["Wentao Zhu", "Xiaoxuan Ma", "Daiheng Gao"], "year": 2023, "url": ""}
+      ]
+    }
+  ]
+}

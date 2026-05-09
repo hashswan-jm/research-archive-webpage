@@ -106,6 +106,12 @@ class App {
         document.getElementById('new-tab-name').value = '';
         document.getElementById('new-tab-url').value = '';
         document.getElementById('new-tab-text').value = '';
+        document.getElementById('llm-prompt-text').value = '';
+        document.getElementById('llm-json-result').value = '';
+        // Reset radio
+        const autoRadio = document.querySelector('input[name="llm-parse-mode"][value="auto"]');
+        if (autoRadio) autoRadio.checked = true;
+        this.onParseModeChange();
     }
 
     async createNewTab() {
@@ -116,7 +122,7 @@ class App {
         }
 
         const sourceType = document.querySelector('input[name="survey-source"]:checked').value;
-        const parseLLM = document.getElementById('parse-with-llm').checked;
+        const parseMode = document.querySelector('input[name="llm-parse-mode"]:checked').value;
         let surveyUrl = '';
         let surveyText = '';
 
@@ -133,32 +139,65 @@ class App {
             let sections = [];
             let papers = {};
 
-            if (parseLLM && (surveyText || surveyUrl)) {
-                this.showToast('Parsing survey with LLM...', 'success');
-                const textToParse = surveyText || `Survey URL: ${surveyUrl}`;
-                const result = await llm.parseSurvey(textToParse);
-                sections = (result.sections || []).map(s => ({
-                    id: this.uuid(),
-                    title: s.title,
-                    paperIds: []
-                }));
+            if (parseMode !== 'skip' && (surveyText || surveyUrl)) {
+                if (parseMode === 'auto') {
+                    this.showToast('Parsing survey with LLM...', 'success');
+                    const textToParse = surveyText || `Survey URL: ${surveyUrl}`;
+                    const result = await llm.parseSurvey(textToParse);
+                    sections = (result.sections || []).map(s => ({
+                        id: this.uuid(),
+                        title: s.title,
+                        paperIds: []
+                    }));
 
-                // Create papers from parsed results
-                for (let i = 0; i < result.sections?.length; i++) {
-                    const sec = result.sections[i];
-                    const secId = sections[i].id;
-                    for (const p of sec.papers || []) {
-                        const paperId = this.uuid();
-                        papers[paperId] = {
-                            id: paperId,
-                            title: p.title,
-                            authors: p.authors || [],
-                            year: p.year,
-                            url: p.url || '',
-                            content: { method: '', training: '', datasets: '', metrics: '', ablation: '' },
-                            images: {}
-                        };
-                        sections[i].paperIds.push(paperId);
+                    for (let i = 0; i < result.sections?.length; i++) {
+                        const sec = result.sections[i];
+                        const secId = sections[i].id;
+                        for (const p of sec.papers || []) {
+                            const paperId = this.uuid();
+                            papers[paperId] = {
+                                id: paperId,
+                                title: p.title,
+                                authors: p.authors || [],
+                                year: p.year,
+                                url: p.url || '',
+                                content: { method: '', training: '', datasets: '', metrics: '', ablation: '' },
+                                images: {}
+                            };
+                            sections[i].paperIds.push(paperId);
+                        }
+                    }
+                } else if (parseMode === 'manual') {
+                    const jsonText = document.getElementById('llm-json-result').value.trim();
+                    if (jsonText) {
+                        let result;
+                        try {
+                            result = JSON.parse(jsonText);
+                        } catch (e) {
+                            throw new Error('Invalid JSON: ' + e.message);
+                        }
+                        sections = (result.sections || []).map(s => ({
+                            id: this.uuid(),
+                            title: s.title,
+                            paperIds: []
+                        }));
+
+                        for (let i = 0; i < result.sections?.length; i++) {
+                            const sec = result.sections[i];
+                            for (const p of sec.papers || []) {
+                                const paperId = this.uuid();
+                                papers[paperId] = {
+                                    id: paperId,
+                                    title: p.title,
+                                    authors: p.authors || [],
+                                    year: p.year,
+                                    url: p.url || '',
+                                    content: { method: '', training: '', datasets: '', metrics: '', ablation: '' },
+                                    images: {}
+                                };
+                                sections[i].paperIds.push(paperId);
+                            }
+                        }
                     }
                 }
             }
@@ -576,8 +615,66 @@ class App {
             radio.addEventListener('change', (e) => {
                 document.getElementById('survey-url-group').classList.toggle('hidden', e.target.value !== 'url');
                 document.getElementById('survey-text-group').classList.toggle('hidden', e.target.value !== 'text');
+                this.updatePromptText();
             });
         });
+        document.querySelectorAll('input[name="llm-parse-mode"]').forEach(radio => {
+            radio.addEventListener('change', () => this.onParseModeChange());
+        });
+        document.getElementById('new-tab-text').addEventListener('input', () => this.updatePromptText());
+    }
+
+    onParseModeChange() {
+        const mode = document.querySelector('input[name="llm-parse-mode"]:checked')?.value || 'auto';
+        const isManual = mode === 'manual';
+        document.getElementById('llm-prompt-group').classList.toggle('hidden', !isManual);
+        document.getElementById('llm-json-group').classList.toggle('hidden', !isManual);
+        if (isManual) this.updatePromptText();
+    }
+
+    updatePromptText() {
+        const sourceType = document.querySelector('input[name="survey-source"]:checked')?.value || 'text';
+        let surveyContent = '';
+        if (sourceType === 'url') {
+            const url = document.getElementById('new-tab-url').value.trim();
+            surveyContent = url ? `Survey URL: ${url}` : '';
+        } else if (sourceType === 'text') {
+            surveyContent = document.getElementById('new-tab-text').value.trim();
+        }
+
+        if (!surveyContent) {
+            document.getElementById('llm-prompt-text').value = 'Fill survey text or URL above to generate prompt...';
+            return;
+        }
+
+        const prompt = `You are an academic research assistant. Given the following survey paper text, extract the main topic, sections/categories, and key papers mentioned in each section.
+
+Return ONLY a JSON object in this exact format:
+{
+  "topic": "Survey Title",
+  "sections": [
+    {
+      "title": "Section Name",
+      "papers": [
+        {"title": "Paper Title", "authors": ["Author1", "Author2"], "year": 2024, "url": ""}
+      ]
+    }
+  ]
+}
+
+Survey text:\n${surveyContent}`;
+        document.getElementById('llm-prompt-text').value = prompt;
+    }
+
+    copyPrompt() {
+        const textarea = document.getElementById('llm-prompt-text');
+        if (!textarea.value || textarea.value.includes('Fill survey')) {
+            this.showToast('Fill survey text or URL first', 'error');
+            return;
+        }
+        textarea.select();
+        document.execCommand('copy');
+        this.showToast('Prompt copied! Paste it into your LLM (kimi, ChatGPT, etc.)', 'success');
     }
 
     uuid() {

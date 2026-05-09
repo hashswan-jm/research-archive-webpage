@@ -89,10 +89,25 @@
                     <textarea id="new-tab-text" rows="8" placeholder="Paste the full or partial survey text here..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="parse-with-llm" checked>
-                        Parse sections & papers with LLM (requires OpenAI key)
-                    </label>
+                    <label>LLM Parse Mode</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="llm-parse-mode" value="auto" checked> Auto (call API)</label>
+                        <label><input type="radio" name="llm-parse-mode" value="manual"> Manual (copy prompt, paste JSON)</label>
+                        <label><input type="radio" name="llm-parse-mode" value="skip"> Skip</label>
+                    </div>
+                </div>
+                <div class="form-group hidden" id="llm-prompt-group">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <label>Prompt for LLM</label>
+                        <button class="btn btn-xs btn-secondary" onclick="app.copyPrompt()">Copy Prompt</button>
+                    </div>
+                    <textarea id="llm-prompt-text" rows="4" readonly style="font-size:0.8rem;background:var(--bg-tertiary);color:var(--text-secondary);" placeholder="Fill survey text above, then click Copy Prompt"></textarea>
+                    <small>Copy this prompt to your LLM (kimi, ChatGPT, etc.), then paste the JSON result below.</small>
+                </div>
+                <div class="form-group hidden" id="llm-json-group">
+                    <label>Paste LLM JSON Result</label>
+                    <textarea id="llm-json-result" rows="6" placeholder='{"topic": "...", "sections": [{"title": "...", "papers": [...]}]}'></textarea>
+                    <small>See templates/llm-survey-response.json for expected format</small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -220,11 +235,11 @@
         </main>
     </div>
 
-    <script src="js/db.js?v=3"></script>
-    <script src="js/github.js?v=3"></script>
-    <script src="js/llm.js?v=3"></script>
-    <script src="js/editor.js?v=3"></script>
-    <script src="js/tree.js?v=3"></script>
-    <script src="js/app.js?v=3"></script>
+    <script src="js/db.js?v=4"></script>
+    <script src="js/github.js?v=4"></script>
+    <script src="js/llm.js?v=4"></script>
+    <script src="js/editor.js?v=4"></script>
+    <script src="js/tree.js?v=4"></script>
+    <script src="js/app.js?v=4"></script>
 </body>
 </html>
