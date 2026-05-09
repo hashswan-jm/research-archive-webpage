@@ -386,18 +386,23 @@ class App {
 
     // ── Settings ──
     openSettings() {
-        document.getElementById('github-token').value = sessionStorage.getItem('github_token') || '';
-        document.getElementById('github-repo').value = sessionStorage.getItem('github_repo') || 'hashswan-jm/research-archive-webpage';
-        document.getElementById('llm-api-key').value = sessionStorage.getItem('llm_api_key') || '';
-        document.getElementById('llm-base-url').value = sessionStorage.getItem('llm_base_url') || '';
-        document.getElementById('llm-model').value = sessionStorage.getItem('llm_model') || 'gpt-4o';
+        try {
+            document.getElementById('github-token').value = sessionStorage.getItem('github_token') || '';
+            document.getElementById('github-repo').value = sessionStorage.getItem('github_repo') || 'hashswan-jm/research-archive-webpage';
+            document.getElementById('llm-api-key').value = sessionStorage.getItem('llm_api_key') || '';
+            document.getElementById('llm-base-url').value = sessionStorage.getItem('llm_base_url') || '';
+            document.getElementById('llm-model').value = sessionStorage.getItem('llm_model') || 'gpt-4o';
 
-        const protocol = sessionStorage.getItem('llm_protocol') || 'openai';
-        const radio = document.querySelector(`input[name="llm-protocol"][value="${protocol}"]`);
-        if (radio) radio.checked = true;
-        this.onProtocolChange();
+            const protocol = sessionStorage.getItem('llm_protocol') || 'openai';
+            const radio = document.querySelector(`input[name="llm-protocol"][value="${protocol}"]`);
+            if (radio) radio.checked = true;
+            this.onProtocolChange();
 
-        document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        } catch (e) {
+            console.error('openSettings failed:', e);
+            alert('Failed to open settings: ' + e.message);
+        }
     }
 
     closeSettings() {
