@@ -1,0 +1,281 @@
+{
+  "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "name": "VLA Models for Robotics Survey",
+  "surveyUrl": "https://arxiv.org/abs/2510.07077",
+  "surveyText": "Vision-Language-Action Models for Robotics: A Review Towards Real-World Applications. This survey covers VLA models unifying vision, language, and action data for robotics, including architectures, modality-specific processing, learning paradigms, robot platforms, datasets, data augmentation, and evaluation benchmarks.",
+  "createdAt": "2025-10-08T00:00:00.000Z",
+  "sections": [
+    {
+      "id": "sec-bg-1111-2222-3333-444444444444",
+      "title": "Background and Foundations",
+      "paperIds": ["paper-llm-vla-001", "paper-vlm-robot-002", "paper-rt1-003"]
+    },
+    {
+      "id": "sec-arch-1111-2222-3333-555555555555",
+      "title": "Architectures and Building Blocks",
+      "paperIds": ["paper-rt2-004", "paper-openvla-005", "paper-octo-006"]
+    },
+    {
+      "id": "sec-mod-1111-2222-3333-666666666666",
+      "title": "Modality-Specific Processing",
+      "paperIds": ["paper-vit-007", "paper-cliport-008"]
+    },
+    {
+      "id": "sec-learn-1111-2222-3333-777777777777",
+      "title": "Learning Paradigms",
+      "paperIds": ["paper-bc-009", "paper-ibc-010", "paper-diffusion-policy-011"]
+    },
+    {
+      "id": "sec-data-1111-2222-3333-888888888888",
+      "title": "Datasets and Data Collection",
+      "paperIds": ["paper-bridge-012", "paper-openx-013", "paper-droid-014"]
+    },
+    {
+      "id": "sec-eval-1111-2222-3333-999999999999",
+      "title": "Evaluation Benchmarks",
+      "paperIds": ["paper-calvin-015", "paper-libero-016"]
+    }
+  ],
+  "papers": {
+    "paper-llm-vla-001": {
+      "id": "paper-llm-vla-001",
+      "title": "LLM-VLA: Large Language Model for Vision-Language-Action",
+      "authors": ["Kento Kawaharazuka"],
+      "year": 2024,
+      "url": "",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-vlm-robot-002": {
+      "id": "paper-vlm-robot-002",
+      "title": "Vision-Language Models for Robotic Manipulation",
+      "authors": ["Yuke Zhu"],
+      "year": 2023,
+      "url": "",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-rt1-003": {
+      "id": "paper-rt1-003",
+      "title": "RT-1: Robotics Transformer for Real-World Control at Scale",
+      "authors": ["Anthony Brohan", "Noah Brown", "Justice Carbajal"],
+      "year": 2023,
+      "url": "https://arxiv.org/abs/2212.06817",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-rt2-004": {
+      "id": "paper-rt2-004",
+      "title": "RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control",
+      "authors": ["Anthony Brohan", "Yevgen Chebotar", "Chelsea Finn"],
+      "year": 2023,
+      "url": "https://arxiv.org/abs/2307.15818",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-openvla-005": {
+      "id": "paper-openvla-005",
+      "title": "OpenVLA: An Open-Source Vision-Language-Action Model",
+      "authors": ["Moo Jin Kim", "Karl Pertsch", "Siddharth Karamcheti"],
+      "year": 2024,
+      "url": "https://arxiv.org/abs/2406.09246",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-octo-006": {
+      "id": "paper-octo-006",
+      "title": "Octo: An Open-Source Generalist Robot Policy",
+      "authors": ["Dibya Ghosh", "Homer Walke", "Karl Pertsch"],
+      "year": 2024,
+      "url": "https://arxiv.org/abs/2405.12213",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-vit-007": {
+      "id": "paper-vit-007",
+      "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+      "authors": ["Alexey Dosovitskiy", "Lucas Beyer", "Alexander Kolesnikov"],
+      "year": 2021,
+      "url": "https://arxiv.org/abs/2010.11929",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-cliport-008": {
+      "id": "paper-cliport-008",
+      "title": "CLIPort: What and Where Pathways for Robotic Manipulation",
+      "authors": ["Mohit Shridhar", "Lucas Manuelli", "Dieter Fox"],
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2109.12098",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-bc-009": {
+      "id": "paper-bc-009",
+      "title": "Behavior Cloning for Robotic Manipulation",
+      "authors": ["Stephane Ross", "Geoffrey Gordon", "Drew Bagnell"],
+      "year": 2011,
+      "url": "",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-ibc-010": {
+      "id": "paper-ibc-010",
+      "title": "Implicit Behavioral Cloning",
+      "authors": ["Pete Florence", "Corey Lynch", "Andy Zeng"],
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2109.00137",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-diffusion-policy-011": {
+      "id": "paper-diffusion-policy-011",
+      "title": "Diffusion Policy: Visuomotor Policy Learning via Action Diffusion",
+      "authors": ["Cheng Chi", "Siyuan Feng", "Yilun Du"],
+      "year": 2023,
+      "url": "https://arxiv.org/abs/2303.04137",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-bridge-012": {
+      "id": "paper-bridge-012",
+      "title": "BridgeData: A Dataset for Learning Cross-Domain Robotic Manipulation",
+      "authors": ["Homer Walke", "Kevin Black", "Tony Z. Zhao"],
+      "year": 2023,
+      "url": "https://arxiv.org/abs/2308.12952",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-openx-013": {
+      "id": "paper-openx-013",
+      "title": "Open X-Embodiment: Robotic Learning Datasets and RT-X Models",
+      "authors": ["Open X-Embodiment Collaboration"],
+      "year": 2024,
+      "url": "https://arxiv.org/abs/2310.08864",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-droid-014": {
+      "id": "paper-droid-014",
+      "title": "DROID: A Large-Scale In-The-Wild Robot Manipulation Dataset",
+      "authors": ["Alexander Khazatsky", "Karl Pertsch", "Sudeep Dasari"],
+      "year": 2024,
+      "url": "https://arxiv.org/abs/2403.12945",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-calvin-015": {
+      "id": "paper-calvin-015",
+      "title": "CALVIN: A Benchmark for Language-Conditioned Policy Learning",
+      "authors": ["Oier Mees", "Lukas Hermann", "Wolfram Burgard"],
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2112.05298",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    },
+    "paper-libero-016": {
+      "id": "paper-libero-016",
+      "title": "LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning",
+      "authors": ["Bo Liu", "Yifeng Zhu", "Chongkai Gao"],
+      "year": 2024,
+      "url": "https://arxiv.org/abs/2306.03310",
+      "content": {
+        "method": "",
+        "training": "",
+        "datasets": "",
+        "metrics": "",
+        "ablation": ""
+      },
+      "images": {}
+    }
+  }
+}
