@@ -293,7 +293,7 @@
       },
       "ablationStudy": [
         { "aspect": "Reflow", "finding": "Single reflow step significantly straightens trajectory; diminishing returns after 2 steps" },
-        "aspect": "One-step vs multi-step", "finding": "Rectified flow achieves near multi-step quality with just 1 sampling step"
+        { "aspect": "One-step vs multi-step", "finding": "Rectified flow achieves near multi-step quality with just 1 sampling step" }
       ]
     },
     "ddim": {
