@@ -4,242 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Research Archive</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3>Settings</h3>
-                <button class="btn-icon" onclick="app.closeSettings()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>GitHub Token</label>
-                    <input type="password" id="github-token" placeholder="ghp_xxxxxxxx">
-                    <small>Required to read/write tab data from your repo</small>
-                </div>
-                <div class="form-group">
-                    <label>Repository</label>
-                    <input type="text" id="github-repo" placeholder="username/repo-name" value="hashswan-jm/research-archive-webpage">
-                </div>
-                <div class="form-group">
-                    <label>API Protocol</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="llm-protocol" value="openai" checked onchange="app.onProtocolChange()"> OpenAI</label>
-                        <label><input type="radio" name="llm-protocol" value="anthropic" onchange="app.onProtocolChange()"> Anthropic</label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>API Key</label>
-                    <input type="password" id="llm-api-key" placeholder="sk-xxxxxxxx or kimi-key">
-                    <small id="api-key-hint">OpenAI: sk-...  /  Anthropic: x-api-key</small>
-                </div>
-                <div class="form-group">
-                    <label>Base URL (optional)</label>
-                    <input type="text" id="llm-base-url" placeholder="https://api.openai.com/v1">
-                    <small>Leave empty to use default endpoint</small>
-                </div>
-                <div class="form-group">
-                    <label>Proxy URL (optional)</label>
-                    <input type="text" id="llm-proxy-url" placeholder="http://localhost:5000">
-                    <small>For CORS issues: run proxy.py locally and put http://localhost:5000 here</small>
-                </div>
-                <div class="form-group">
-                    <label>LLM Model</label>
-                    <input type="text" id="llm-model" placeholder="gpt-4o or kimi-code" value="gpt-4o">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.closeSettings()">Cancel</button>
-                <button class="btn btn-primary" onclick="app.saveSettings()">Save</button>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-content">
+            <h1 id="topic-title">Loading...</h1>
+            <div class="survey-info" id="survey-info"></div>
+        </div>
+    </header>
+
+    <!-- Mind Map Section -->
+    <section class="mindmap-section">
+        <div class="section-header">
+            <h2>Topic Mind Map</h2>
+            <div class="mindmap-controls">
+                <button id="expand-all">Expand All</button>
+                <button id="collapse-all">Collapse All</button>
+                <button id="reset-zoom">Reset View</button>
             </div>
         </div>
-    </div>
+        <div id="mindmap-container"></div>
+    </section>
 
-    <!-- New Tab Modal -->
-    <div id="new-tab-modal" class="modal-overlay hidden">
-        <div class="modal-box modal-lg">
-            <div class="modal-header">
-                <h3>New Tab</h3>
-                <button class="btn-icon" onclick="app.closeNewTabModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Tab Name</label>
-                    <input type="text" id="new-tab-name" placeholder="e.g. Diffusion Models Survey">
-                </div>
-                <div class="form-group">
-                    <label>Survey Source</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="survey-source" value="url" checked> URL</label>
-                        <label><input type="radio" name="survey-source" value="text"> Paste Text</label>
-                        <label><input type="radio" name="survey-source" value="manual"> Manual (no survey)</label>
-                    </div>
-                </div>
-                <div class="form-group" id="survey-url-group">
-                    <label>Survey URL</label>
-                    <input type="text" id="new-tab-url" placeholder="https://arxiv.org/abs/...">
-                </div>
-                <div class="form-group hidden" id="survey-text-group">
-                    <label>Paste Survey Text (markdown/plain text)</label>
-                    <textarea id="new-tab-text" rows="8" placeholder="Paste the full or partial survey text here..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>LLM Parse Mode</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="llm-parse-mode" value="auto" checked> Auto (call API)</label>
-                        <label><input type="radio" name="llm-parse-mode" value="manual"> Manual (copy prompt, paste JSON)</label>
-                        <label><input type="radio" name="llm-parse-mode" value="skip"> Skip</label>
-                    </div>
-                </div>
-                <div class="form-group hidden" id="llm-prompt-group">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                        <label>Prompt for LLM</label>
-                        <button class="btn btn-xs btn-secondary" onclick="app.copyPrompt()">Copy Prompt</button>
-                    </div>
-                    <textarea id="llm-prompt-text" rows="4" readonly style="font-size:0.8rem;background:var(--bg-tertiary);color:var(--text-secondary);" placeholder="Fill survey text above, then click Copy Prompt"></textarea>
-                    <small>Copy this prompt to your LLM (kimi, ChatGPT, etc.), then paste the JSON result below.</small>
-                </div>
-                <div class="form-group hidden" id="llm-json-group">
-                    <label>Paste LLM JSON Result</label>
-                    <textarea id="llm-json-result" rows="6" placeholder='{"topic": "...", "sections": [{"title": "...", "papers": [...]}]}'></textarea>
-                    <small>See templates/llm-survey-response.json for expected format</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.closeNewTabModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="app.createNewTab()">Create</button>
-            </div>
+    <!-- Controls -->
+    <section class="controls-section">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search papers...">
+            <span class="search-icon">&#128269;</span>
+        </div>
+        <div class="category-filters" id="category-filters"></div>
+    </section>
+
+    <!-- Papers Grid -->
+    <section class="papers-section">
+        <div class="section-header">
+            <h2>Papers</h2>
+            <span id="paper-count"></span>
+        </div>
+        <div id="papers-grid"></div>
+    </section>
+
+    <!-- Detail Modal (Slide-out) -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="modal-body"></div>
         </div>
     </div>
+    <div id="modal-overlay" class="modal-overlay"></div>
 
-    <!-- Toast -->
-    <div id="toast" class="toast hidden"></div>
-
-    <!-- Main App -->
-    <div id="app">
-        <!-- Top Bar -->
-        <header class="top-bar">
-            <div class="top-bar-left">
-                <h1 class="app-title">Research Archive</h1>
-            </div>
-            <div class="top-bar-right">
-                <button class="btn btn-sm btn-secondary" onclick="app.exportData()">Export JSON</button>
-                <label class="btn btn-sm btn-secondary" style="position:relative;cursor:pointer;">
-                    Import JSON
-                    <input type="file" accept=".json" style="position:absolute;opacity:0;inset:0;" onchange="app.importData(this)">
-                </label>
-                <button class="btn btn-sm btn-secondary" onclick="app.saveToGitHub()" title="Save to GitHub">Save</button>
-                <button class="btn btn-sm btn-ghost" onclick="app.openSettings()">Settings</button>
-            </div>
-        </header>
-
-        <!-- Tab Bar -->
-        <nav class="tab-bar" id="tab-bar">
-            <div class="tab-list" id="tab-list"></div>
-            <button class="tab-add" onclick="app.openNewTabModal()" title="New tab">+</button>
-        </nav>
-
-        <!-- Tab Content -->
-        <main class="tab-content" id="tab-content">
-            <!-- Empty State -->
-            <div class="empty-state" id="empty-state">
-                <p>No tabs yet. Click <strong>+</strong> to create a new survey tab.</p>
-                <button class="btn btn-primary" onclick="app.openNewTabModal()">Create First Tab</button>
-            </div>
-
-            <!-- Active Tab Workspace -->
-            <div class="workspace hidden" id="workspace">
-                <!-- Survey Header -->
-                <div class="survey-header">
-                    <input type="text" class="survey-title-input" id="survey-title-input" placeholder="Tab Name...">
-                    <div class="survey-meta">
-                        <input type="text" class="survey-url-input" id="survey-url-input" placeholder="Survey URL (optional)">
-                        <button class="btn btn-sm btn-ghost" onclick="app.fetchSurveyText()">Fetch Text</button>
-                    </div>
-                </div>
-
-                <!-- Main Workspace: Tree + Editor -->
-                <div class="workspace-body">
-                    <!-- Left: Tree Panel -->
-                    <aside class="tree-panel">
-                        <div class="tree-toolbar">
-                            <input type="text" class="tree-search" id="tree-search" placeholder="Search papers..." oninput="app.searchTree(this.value)">
-                            <button class="btn btn-xs btn-ghost" onclick="app.addSection()" title="Add section">+ Section</button>
-                        </div>
-                        <div class="tree-content" id="tree-content"></div>
-                    </aside>
-
-                    <!-- Right: Editor Panel -->
-                    <section class="editor-panel" id="editor-panel">
-                        <div class="editor-empty" id="editor-empty">
-                            <p>Select a paper from the tree to edit</p>
-                            <p class="text-muted">Or add a new paper using the + button next to a section</p>
-                        </div>
-                        <div class="editor-wrapper hidden" id="editor-wrapper">
-                            <!-- Paper Header -->
-                            <div class="editor-paper-header">
-                                <input type="text" class="paper-title-input" id="paper-title-input" placeholder="Paper Title">
-                                <div class="paper-meta-row">
-                                    <input type="text" class="paper-meta-input" id="paper-authors-input" placeholder="Authors (comma separated)">
-                                    <input type="number" class="paper-meta-input paper-year" id="paper-year-input" placeholder="Year">
-                                    <input type="text" class="paper-meta-input" id="paper-url-input" placeholder="Paper URL">
-                                </div>
-                                <div class="editor-actions">
-                                    <button class="btn btn-xs btn-ghost" onclick="app.closeEditor()">Close</button>
-                                    <button class="btn btn-xs btn-danger" onclick="app.deleteCurrentPaper()">Delete</button>
-                                    <button class="btn btn-xs btn-primary" onclick="app.saveCurrentPaper()">Save Paper</button>
-                                    <button class="btn btn-xs btn-secondary" onclick="app.enrichWithLLM()" title="Auto-fill with LLM">Auto-fill (LLM)</button>
-                                </div>
-                            </div>
-
-                            <!-- Editor Tabs -->
-                            <div class="editor-tabs" id="editor-tabs">
-                                <button class="editor-tab active" data-tab="method" onclick="app.switchEditorTab('method')">Method</button>
-                                <button class="editor-tab" data-tab="training" onclick="app.switchEditorTab('training')">Training</button>
-                                <button class="editor-tab" data-tab="datasets" onclick="app.switchEditorTab('datasets')">Datasets</button>
-                                <button class="editor-tab" data-tab="metrics" onclick="app.switchEditorTab('metrics')">Metrics</button>
-                                <button class="editor-tab" data-tab="ablation" onclick="app.switchEditorTab('ablation')">Ablation</button>
-                                <button class="editor-tab" data-tab="images" onclick="app.switchEditorTab('images')">Images</button>
-                            </div>
-
-                            <!-- Editor Content Area -->
-                            <div class="editor-content" id="editor-content-area">
-                                <!-- Text Editor -->
-                                <div class="editor-textarea-wrap" id="editor-textarea-wrap">
-                                    <textarea class="editor-textarea" id="editor-textarea" placeholder="Write markdown here... You can paste images directly (Ctrl+V)."></textarea>
-                                </div>
-                                <!-- Preview -->
-                                <div class="editor-preview hidden" id="editor-preview"></div>
-                            </div>
-
-                            <!-- Editor Toolbar -->
-                            <div class="editor-toolbar">
-                                <button class="btn btn-xs btn-ghost" id="preview-toggle" onclick="app.togglePreview()">Preview</button>
-                                <span class="toolbar-sep"></span>
-                                <span class="text-muted text-sm">Paste images with Ctrl+V</span>
-                                <span class="toolbar-sep"></span>
-                                <label class="btn btn-xs btn-ghost" style="position:relative;cursor:pointer;">
-                                    Upload Image
-                                    <input type="file" accept="image/*" style="position:absolute;opacity:0;inset:0;" onchange="app.handleImageUpload(this)">
-                                </label>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script src="js/db.js?v=4"></script>
-    <script src="js/github.js?v=4"></script>
-    <script src="js/llm.js?v=4"></script>
-    <script src="js/editor.js?v=4"></script>
-    <script src="js/tree.js?v=4"></script>
-    <script src="js/app.js?v=4"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
