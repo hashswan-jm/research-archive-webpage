@@ -24,13 +24,27 @@ const colors = {
 // Entry: Load topics index
 // ───────────────────────────────
 async function init() {
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        themeVariables: {
+            primaryColor: '#21262d',
+            primaryTextColor: '#e6edf3',
+            primaryBorderColor: '#58a6ff',
+            lineColor: '#8b949e',
+            secondaryColor: '#161b22',
+            tertiaryColor: '#30363d',
+            fontFamily: 'inherit'
+        },
+        flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
+    });
+
     try {
         const res = await fetch('./data/topics.json');
         topics = await res.json();
         renderTabs();
         bindGlobalEvents();
 
-        // Load first topic by default
         if (topics.length > 0) {
             await switchTopic(topics[0].id);
         }
@@ -472,9 +486,69 @@ function openModal(paper) {
         </div>
     ` : '';
 
-    const modelDiagramHtml = paper.modelDiagram ? `
-        <img src="${paper.modelDiagram}" alt="Model diagram" style="max-width:100%;border-radius:8px;border:1px solid var(--border-color);">
-    ` : '<p style="color:var(--text-muted);">No model diagram available. Add an image URL to <code>modelDiagram</code> field in JSON.</p>';
+    // ── Model Diagram (image URL or local path) ──
+    let modelDiagramHtml = '';
+    if (paper.modelDiagram) {
+        const src = paper.modelDiagram.startsWith('http') ? paper.modelDiagram : './' + paper.modelDiagram;
+        modelDiagramHtml = `<img class="model-diagram-img" src="${src}" alt="${escapeHtml(paper.title)} model diagram" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><p style="color:var(--text-muted);display:none;">Image failed to load. Check the path in <code>modelDiagram</code>.</p>`;
+    } else {
+        modelDiagramHtml = '<p style="color:var(--text-muted);">No model diagram image. Add an image URL or local path (e.g. <code>assets/diffusion/ddpm.png</code>) to the <code>modelDiagram</code> field.</p>';
+    }
+
+    // ── Architecture Details ──
+    const architectureHtml = paper.architecture ? `
+        <table class="arch-table">
+            <tbody>
+                ${Object.entries(paper.architecture).map(([k, v]) => `
+                    <tr><th>${escapeHtml(formatKey(k))}</th><td>${escapeHtml(String(v))}</td></tr>
+                `).join('')}
+            </tbody>
+        </table>
+    ` : '';
+
+    // ── Pipeline (Mermaid) ──
+    const pipelineHtml = paper.pipeline ? `
+        <pre class="mermaid">${paper.pipeline}</pre>
+    ` : '';
+
+    // ── Method Steps ──
+    const methodStepsHtml = paper.methodSteps ? `
+        <div class="method-steps">
+            ${paper.methodSteps.map((step, i) => `
+                <div class="method-step">
+                    <div class="method-step-number">${step.step || (i + 1)}</div>
+                    <div class="method-step-body">
+                        <div class="method-step-title">${escapeHtml(step.title)}</div>
+                        <div class="method-step-desc">${escapeHtml(step.description)}</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    ` : '';
+
+    // ── Key Components ──
+    const keyComponentsHtml = paper.keyComponents ? `
+        <div class="component-grid">
+            ${paper.keyComponents.map(c => `
+                <div class="component-card">
+                    <div class="component-name">${escapeHtml(c.name)}</div>
+                    <div class="component-desc">${escapeHtml(c.description)}</div>
+                </div>
+            `).join('')}
+        </div>
+    ` : '';
+
+    // ── Equations ──
+    const equationsHtml = paper.equations ? `
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            ${paper.equations.map(eq => `
+                <div class="equation-block">
+                    <span class="eq-label">${escapeHtml(eq.label)}</span>
+                    <div>${escapeHtml(eq.formula)}</div>
+                </div>
+            `).join('')}
+        </div>
+    ` : '';
 
     body.innerHTML = `
         <div class="modal-section">
@@ -497,10 +571,40 @@ function openModal(paper) {
             <div class="modal-text">${escapeHtml(paper.contribution)}</div>
         </div>
 
+        ${architectureHtml ? `
         <div class="modal-section">
-            <h4>Model Structure</h4>
+            <h4>Model Architecture</h4>
+            ${architectureHtml}
+        </div>` : ''}
+
+        ${keyComponentsHtml ? `
+        <div class="modal-section">
+            <h4>Key Components</h4>
+            ${keyComponentsHtml}
+        </div>` : ''}
+
+        ${methodStepsHtml ? `
+        <div class="modal-section">
+            <h4>Method Pipeline</h4>
+            ${methodStepsHtml}
+        </div>` : ''}
+
+        ${pipelineHtml ? `
+        <div class="modal-section">
+            <h4>Pipeline Diagram</h4>
+            ${pipelineHtml}
+        </div>` : ''}
+
+        <div class="modal-section">
+            <h4>Model Structure Diagram</h4>
             ${modelDiagramHtml}
         </div>
+
+        ${equationsHtml ? `
+        <div class="modal-section">
+            <h4>Key Equations</h4>
+            ${equationsHtml}
+        </div>` : ''}
 
         <div class="modal-section">
             <h4>GitHub</h4>
@@ -537,6 +641,11 @@ function openModal(paper) {
     document.getElementById('detail-modal').classList.add('open');
     document.getElementById('modal-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+
+    // Render Mermaid diagrams inside modal
+    requestAnimationFrame(() => {
+        mermaid.run({ querySelector: '.mermaid' });
+    });
 }
 
 function closeModal() {

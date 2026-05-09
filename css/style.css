@@ -622,6 +622,187 @@ body {
     font-size: 0.9rem;
 }
 
+/* ── Mermaid Diagrams ── */
+.mermaid {
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+    font-family: inherit !important;
+}
+
+.mermaid svg {
+    max-width: 100%;
+}
+
+/* ── Architecture Table ── */
+.arch-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.arch-table th,
+.arch-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.arch-table th {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    width: 40%;
+}
+
+.arch-table td {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.arch-table tr:hover td {
+    color: var(--accent);
+}
+
+/* ── Method Steps ── */
+.method-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    counter-reset: step;
+}
+
+.method-step {
+    display: flex;
+    gap: 14px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    border-left: 3px solid var(--accent);
+}
+
+.method-step-number {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.method-step-body {
+    flex: 1;
+}
+
+.method-step-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+}
+
+.method-step-desc {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+/* ── Key Components ── */
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+.component-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+}
+
+.component-card .component-name {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+.component-card .component-desc {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* ── Model Diagram Image ── */
+.model-diagram-img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: block;
+    margin: 0 auto;
+}
+
+/* ── Equation / Code blocks ── */
+.equation-block {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    overflow-x: auto;
+    line-height: 1.6;
+}
+
+.equation-block .eq-label {
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Comparison Table ── */
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    background: var(--bg-tertiary);
+}
+
+.comparison-table td {
+    color: var(--text-secondary);
+}
+
+.comparison-table tr:hover td {
+    color: var(--text-primary);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;

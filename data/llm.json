@@ -77,6 +77,37 @@
         { "aspect": "Model size", "finding": "Few-shot performance improves smoothly and predictably with model scale" },
         { "aspect": "Context examples", "finding": "Performance increases with number of in-context examples up to model context limit" },
         { "aspect": "Prompt formatting", "finding": "Model highly sensitive to prompt formatting and example ordering" }
+      ],
+      "architecture": {
+        "type": "Decoder-only Transformer",
+        "parameters": "175B",
+        "layers": 96,
+        "hiddenDim": 12288,
+        "attentionHeads": 96,
+        "headDim": 128,
+        "contextLength": 2048,
+        "vocabSize": 50257,
+        "activation": "GELU",
+        "positionEncoding": "Learned",
+        "normalization": "Pre-LN"
+      },
+      "pipeline": "graph TD\n    A[Input Tokens] --> B[Token + Position Embedding]\n    B --> C[Transformer Block x96]\n    C -->|Self-Attn + FFN| D[...]\n    D --> E[Final LayerNorm]\n    E --> F[Output Projection]\n    F --> G[Next Token Logits]\n    H[Task Description] --> I[In-Context Examples]\n    I --> A",
+      "methodSteps": [
+        { "step": 1, "title": "Autoregressive Pre-training", "description": "Train a decoder-only Transformer to predict the next token on a large corpus of internet text (300B tokens). Uses standard language modeling objective: maximize log P(x_t | x_<t)." },
+        { "step": 2, "title": "Scale to 175B Parameters", "description": "Scale model depth to 96 layers, hidden dimension to 12288, and attention heads to 96. Training requires ~3640 petaflop/s-days of compute on V100 GPUs." },
+        { "step": 3, "title": "Few-Shot Prompting", "description": "At inference time, provide a task description and a few (k=10-100) input-output examples in the context window. No gradient updates are performed on the target task." },
+        { "step": 4, "title": "In-Context Learning", "description": "The model infers the task pattern from the provided examples and completes the pattern for new inputs, demonstrating emergent meta-learning capabilities at large scale." }
+      ],
+      "keyComponents": [
+        { "name": "Multi-Head Self-Attention", "description": "96 attention heads each with 128-dim keys/values. Dense attention over full 2048-token context enables coherent long-form generation." },
+        { "name": "Feed-Forward Network", "description": "4x expansion MLP (hidden_dim=49152) with GELU activation applied independently to each token position after attention." },
+        { "name": "Learned Positional Embeddings", "description": "Unlike sinusoidal encodings, GPT-3 uses learned position embeddings up to 2048 positions, providing more flexible position representation." },
+        { "name": "Alternating Dense + Sparse Attention", "description": "For efficiency at scale, alternating layers use local (128-token) and global attention patterns to reduce compute while maintaining context awareness." }
+      ],
+      "equations": [
+        { "label": "Language Modeling Objective", "formula": "L = -sum_t log P(x_t | x_1, ..., x_{t-1}; theta)" },
+        { "label": "Self-Attention", "formula": "Attention(Q, K, V) = softmax(QK^T / sqrt(d_k)) V" },
+        { "label": "Feed-Forward", "formula": "FFN(x) = GELU(xW_1 + b_1) W_2 + b_2" }
       ]
     },
     "llama": {

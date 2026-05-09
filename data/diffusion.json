@@ -76,6 +76,36 @@
         { "aspect": "Loss type", "finding": "L_simple (noise prediction) significantly outperforms L_vlb for sample quality" },
         { "aspect": "Noise schedule", "finding": "Cosine schedule slightly outperforms linear schedule on high-resolution images" },
         { "aspect": "Model size", "finding": "Increasing depth/width consistently improves FID up to ~100M parameters" }
+      ],
+      "architecture": {
+        "backbone": "U-Net",
+        "totalParameters": "~100M",
+        "downBlocks": 2,
+        "midBlocks": 1,
+        "upBlocks": 2,
+        "attention": "Multi-Head Self-Attention at 16x16",
+        "timeEmbedding": "Sinusoidal + MLP",
+        "groupNorm": "32 groups",
+        "activation": "Swish (SiLU)",
+        "skipConnections": "ResNet-style + Attention"
+      },
+      "pipeline": "graph LR\n    A[Input Image x_0] -->|q| B[Add Noise x_t]\n    B --> C[U-Net]\n    D[Timestep t] --> E[Time Embedding]\n    E --> C\n    C -->|Predict| F[Noise epsilon]\n    F --> G[L2 Loss]\n    G --> H[Gradient Update]\n    H --> C",
+      "methodSteps": [
+        { "step": 1, "title": "Forward Diffusion", "description": "Define a Markov chain that gradually adds Gaussian noise to data: q(x_t | x_{t-1}) = N(x_t; sqrt(1-beta_t) x_{t-1}, beta_t I). After T steps, x_T becomes pure Gaussian noise." },
+        { "step": 2, "title": "Reverse Process", "description": "Learn the reverse distribution p_theta(x_{t-1} | x_t) parameterized by a U-Net. The model predicts either the noise epsilon or the original data x_0." },
+        { "step": 3, "title": "Simplified Objective", "description": "Instead of the full variational lower bound, use L_simple = E[||epsilon - epsilon_theta(x_t, t)||^2] which is easier to optimize and yields better samples." },
+        { "step": 4, "title": "Sampling", "description": "Starting from pure noise x_T ~ N(0, I), iteratively denoise using the learned reverse process for T=1000 steps to obtain a generated image x_0." }
+      ],
+      "keyComponents": [
+        { "name": "U-Net Backbone", "description": "Convolutional encoder-decoder with skip connections. Downsampling blocks extract multi-scale features; upsampling blocks reconstruct the denoised output." },
+        { "name": "Time Embedding", "description": "Sinusoidal position encoding transformed by a small MLP, injected into every residual block via adaptive group normalization to condition the model on the noise level." },
+        { "name": "Self-Attention", "description": "Multi-head attention inserted at 16x16 resolution to capture long-range spatial dependencies in the feature maps." },
+        { "name": "Skip Connections", "description": "Residual connections between corresponding encoder and decoder layers preserve fine-grained spatial information essential for high-quality reconstruction." }
+      ],
+      "equations": [
+        { "label": "Forward Process", "formula": "q(x_t | x_{t-1}) = N(x_t; sqrt(1 - beta_t) x_{t-1}, beta_t I)" },
+        { "label": "Reverse Process", "formula": "p_theta(x_{t-1} | x_t) = N(x_{t-1}; mu_theta(x_t, t), Sigma_theta(x_t, t))" },
+        { "label": "Simplified Loss", "formula": "L_simple = E_{t,x_0,epsilon} [ ||epsilon - epsilon_theta(x_t, t)||^2 ]" }
       ]
     },
     "iddpm": {
@@ -142,6 +172,29 @@
         { "aspect": "Latent space", "finding": "f=8 VAE compression provides best quality/compute tradeoff" },
         { "aspect": "Conditioning", "finding": "Cross-attention outperforms simple concatenation for text guidance" },
         { "aspect": "Training data", "finding": "Filtering LAION by aesthetics significantly improves visual quality" }
+      ],
+      "architecture": {
+        "type": "Latent Diffusion Model (LDM)",
+        "vaeEncoder": "f=8 VAE (KL-regularized)",
+        "latentChannels": 4,
+        "unetParameters": "890M",
+        "textEncoder": "CLIP ViT-L/14 (frozen)",
+        "crossAttention": "Q/K/V projections at each U-Net level",
+        "resolution": "512x512 (latent 64x64)",
+        "timesteps": 1000
+      },
+      "pipeline": "graph TD\n    A[Text Prompt] -->|CLIP| B[Text Embedding]\n    C[Random Noise z_T] --> D[U-Net]\n    B -->|Cross-Attn| D\n    E[Timestep t] -->|Time Embed| D\n    D -->|Predict Noise| F[Denoised z_{t-1}]\n    F -->|Repeat T steps| D\n    F --> G[VAE Decoder]\n    G --> H[Generated Image x_0]",
+      "methodSteps": [
+        { "step": 1, "title": "VAE Encoding", "description": "A pretrained KL-regularized VAE compresses images into a 4-channel latent space with 8x spatial downsampling (512x512 -> 64x64). The encoder is frozen during diffusion training." },
+        { "step": 2, "title": "Text Encoding", "description": "Text prompts are encoded using a frozen CLIP ViT-L/14 text encoder into 77-token embeddings, which serve as conditioning for the diffusion model." },
+        { "step": 3, "title": "Latent Diffusion", "description": "Diffusion operates entirely in the compressed latent space. A U-Net predicts the noise epsilon given the noisy latent z_t, timestep t, and text embeddings via cross-attention layers." },
+        { "step": 4, "title": "VAE Decoding", "description": "After T denoising steps, the final latent z_0 is decoded back to pixel space by the VAE decoder to produce the high-resolution output image." }
+      ],
+      "keyComponents": [
+        { "name": "VAE Encoder/Decoder", "description": "Pretrained KL-regularized autoencoder that compresses images to 1/64th the pixel count (4 channels at 1/8 resolution). Enables training on latent tensors instead of full images." },
+        { "name": "U-Net with Cross-Attention", "description": "Standard U-Net backbone augmented with transformer-style cross-attention blocks that inject text conditioning into the diffusion process at multiple resolutions." },
+        { "name": "CLIP Text Encoder", "description": "Frozen OpenAI CLIP ViT-L/14 model that encodes natural language prompts into semantically rich embeddings aligned with visual representations." },
+        { "name": "Classifier-Free Guidance", "description": "During sampling, interpolates between conditional and unconditional predictions to boost prompt adherence. Scale typically set to 7.5." }
       ]
     },
     "dit": {
