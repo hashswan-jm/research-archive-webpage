@@ -35,11 +35,13 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length)
 
+        headers = self._filter_headers()
+        headers['Accept-Encoding'] = 'identity'
         req = urllib.request.Request(
             target,
             data=body,
             method='POST',
-            headers=self._filter_headers()
+            headers=headers
         )
 
         try:
@@ -76,7 +78,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         return target
 
     def _filter_headers(self):
-        skip = {'host', 'origin', 'referer', 'content-length', 'connection'}
+        skip = {'host', 'origin', 'referer', 'content-length', 'connection', 'accept-encoding'}
         headers = {}
         for key, value in self.headers.items():
             if key.lower() not in skip:
