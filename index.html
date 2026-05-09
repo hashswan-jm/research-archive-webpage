@@ -27,17 +27,25 @@
                     <input type="text" id="github-repo" placeholder="username/repo-name" value="hashswan-jm/research-archive-webpage">
                 </div>
                 <div class="form-group">
-                    <label>OpenAI API Key</label>
-                    <input type="password" id="openai-key" placeholder="sk-xxxxxxxx">
-                    <small>Required for LLM parsing</small>
+                    <label>API Protocol</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="llm-protocol" value="openai" checked onchange="app.onProtocolChange()"> OpenAI</label>
+                        <label><input type="radio" name="llm-protocol" value="anthropic" onchange="app.onProtocolChange()"> Anthropic</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>API Key</label>
+                    <input type="password" id="llm-api-key" placeholder="sk-xxxxxxxx or kimi-key">
+                    <small id="api-key-hint">OpenAI: sk-...  /  Anthropic: x-api-key</small>
+                </div>
+                <div class="form-group">
+                    <label>Base URL (optional)</label>
+                    <input type="text" id="llm-base-url" placeholder="https://api.openai.com/v1">
+                    <small>Leave empty to use default endpoint</small>
                 </div>
                 <div class="form-group">
                     <label>LLM Model</label>
-                    <select id="llm-model">
-                        <option value="gpt-4o">gpt-4o</option>
-                        <option value="gpt-4o-mini">gpt-4o-mini</option>
-                        <option value="gpt-4-turbo">gpt-4-turbo</option>
-                    </select>
+                    <input type="text" id="llm-model" placeholder="gpt-4o or kimi-code" value="gpt-4o">
                 </div>
             </div>
             <div class="modal-footer">

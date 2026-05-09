@@ -15,8 +15,29 @@ class Editor {
     }
 
     bindEvents() {
-        // Paste image
+        // Paste image (in any editor tab)
         this.textarea.addEventListener('paste', (e) => this.handlePaste(e));
+
+        // Drag and drop images
+        this.textarea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            this.textarea.style.background = 'var(--accent-dim)';
+        });
+        this.textarea.addEventListener('dragleave', () => {
+            this.textarea.style.background = '';
+        });
+        this.textarea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            this.textarea.style.background = '';
+            const files = e.dataTransfer?.files;
+            if (files) {
+                for (const file of files) {
+                    if (file.type.startsWith('image/')) {
+                        this.insertImage(file);
+                    }
+                }
+            }
+        });
 
         // Auto-save content on input
         this.textarea.addEventListener('input', () => {
@@ -170,7 +191,15 @@ class Editor {
     }
 
     renderPreview() {
-        const markdown = this.textarea.value;
+        let markdown = this.textarea.value;
+        // Replace inline:// placeholders with actual base64 images
+        const paper = app.getCurrentPaper();
+        if (paper && paper.images) {
+            markdown = markdown.replace(/!\[([^\]]*)\]\(inline:\/\/([^)]+)\)/g, (match, alt, name) => {
+                const base64 = paper.images[name];
+                return base64 ? `![${alt || name}](${base64})` : match;
+            });
+        }
         const html = marked.parse(markdown || '');
         this.preview.innerHTML = DOMPurify.sanitize(html);
     }
@@ -179,14 +208,20 @@ class Editor {
         const items = e.clipboardData?.items;
         if (!items) return;
 
+        const images = [];
         for (const item of items) {
             if (item.type.startsWith('image/')) {
-                e.preventDefault();
-                const file = item.getAsFile();
-                await this.insertImage(file);
-                return;
+                images.push(item.getAsFile());
             }
         }
+
+        if (images.length > 0) {
+            e.preventDefault();
+            for (const file of images) {
+                await this.insertImage(file);
+            }
+        }
+        // If no images, let browser handle normal text paste
     }
 
     async handleFileUpload(input) {
@@ -207,19 +242,19 @@ class Editor {
             paper.images[name] = base64;
         }
 
-        // Insert markdown reference in textarea
-        const markdown = `\n![${name}](${base64})\n`;
+        // Insert short markdown placeholder in textarea (not full base64, keeps editor readable)
+        const placeholder = `\n![${name}](inline://${name})\n`;
         const pos = this.textarea.selectionStart;
         const before = this.textarea.value.slice(0, pos);
         const after = this.textarea.value.slice(pos);
-        this.textarea.value = before + markdown + after;
-        this.textarea.selectionStart = this.textarea.selectionEnd = pos + markdown.length;
+        this.textarea.value = before + placeholder + after;
+        this.textarea.selectionStart = this.textarea.selectionEnd = pos + placeholder.length;
         this.textarea.focus();
 
         // Trigger input event to update unsavedContent
         this.textarea.dispatchEvent(new Event('input'));
 
-        app.showToast('Image inserted', 'success');
+        app.showToast('Image inserted. Click Preview to see it.', 'success');
     }
 
     fileToBase64(file) {

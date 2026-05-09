@@ -24,8 +24,15 @@ class App {
     async loadSettings() {
         github.token = sessionStorage.getItem('github_token') || '';
         github.repo = sessionStorage.getItem('github_repo') || 'hashswan-jm/research-archive-webpage';
-        llm.apiKey = sessionStorage.getItem('openai_key') || '';
+        // Migrate old key name
+        const oldKey = sessionStorage.getItem('openai_key');
+        if (oldKey && !sessionStorage.getItem('llm_api_key')) {
+            sessionStorage.setItem('llm_api_key', oldKey);
+        }
+        llm.apiKey = sessionStorage.getItem('llm_api_key') || '';
         llm.model = sessionStorage.getItem('llm_model') || 'gpt-4o';
+        llm.baseUrl = sessionStorage.getItem('llm_base_url') || '';
+        llm.protocol = sessionStorage.getItem('llm_protocol') || 'openai';
     }
 
     async loadTabs() {
@@ -381,8 +388,15 @@ class App {
     openSettings() {
         document.getElementById('github-token').value = sessionStorage.getItem('github_token') || '';
         document.getElementById('github-repo').value = sessionStorage.getItem('github_repo') || 'hashswan-jm/research-archive-webpage';
-        document.getElementById('openai-key').value = sessionStorage.getItem('openai_key') || '';
+        document.getElementById('llm-api-key').value = sessionStorage.getItem('llm_api_key') || '';
+        document.getElementById('llm-base-url').value = sessionStorage.getItem('llm_base_url') || '';
         document.getElementById('llm-model').value = sessionStorage.getItem('llm_model') || 'gpt-4o';
+
+        const protocol = sessionStorage.getItem('llm_protocol') || 'openai';
+        const radio = document.querySelector(`input[name="llm-protocol"][value="${protocol}"]`);
+        if (radio) radio.checked = true;
+        this.onProtocolChange();
+
         document.getElementById('settings-modal').classList.remove('hidden');
     }
 
@@ -390,27 +404,48 @@ class App {
         document.getElementById('settings-modal').classList.add('hidden');
     }
 
+    onProtocolChange() {
+        const protocol = document.querySelector('input[name="llm-protocol"]:checked')?.value || 'openai';
+        const hint = document.getElementById('api-key-hint');
+        const baseUrlInput = document.getElementById('llm-base-url');
+        if (protocol === 'anthropic') {
+            hint.textContent = 'Anthropic: x-api-key format';
+            if (!baseUrlInput.value) baseUrlInput.placeholder = 'https://api.anthropic.com';
+        } else {
+            hint.textContent = 'OpenAI: sk-... format';
+            if (!baseUrlInput.value) baseUrlInput.placeholder = 'https://api.openai.com/v1';
+        }
+    }
+
     saveSettings() {
         const ghToken = document.getElementById('github-token').value.trim();
         const ghRepo = document.getElementById('github-repo').value.trim();
-        const oaKey = document.getElementById('openai-key').value.trim();
-        const model = document.getElementById('llm-model').value;
+        const apiKey = document.getElementById('llm-api-key').value.trim();
+        const baseUrl = document.getElementById('llm-base-url').value.trim();
+        const model = document.getElementById('llm-model').value.trim();
+        const protocol = document.querySelector('input[name="llm-protocol"]:checked')?.value || 'openai';
 
         if (ghToken) sessionStorage.setItem('github_token', ghToken);
         else sessionStorage.removeItem('github_token');
 
         if (ghRepo) sessionStorage.setItem('github_repo', ghRepo);
 
-        if (oaKey) sessionStorage.setItem('openai_key', oaKey);
-        else sessionStorage.removeItem('openai_key');
+        if (apiKey) sessionStorage.setItem('llm_api_key', apiKey);
+        else sessionStorage.removeItem('llm_api_key');
+
+        if (baseUrl) sessionStorage.setItem('llm_base_url', baseUrl);
+        else sessionStorage.removeItem('llm_base_url');
 
         sessionStorage.setItem('llm_model', model);
+        sessionStorage.setItem('llm_protocol', protocol);
 
         // Update clients
         github.token = ghToken;
         github.repo = ghRepo;
-        llm.apiKey = oaKey;
+        llm.apiKey = apiKey;
         llm.model = model;
+        llm.baseUrl = baseUrl;
+        llm.protocol = protocol;
 
         this.closeSettings();
         this.showToast('Settings saved to session', 'success');

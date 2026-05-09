@@ -1,35 +1,93 @@
-// OpenAI API wrapper for LLM-powered parsing
+// LLM API wrapper supporting OpenAI and Anthropic protocols
 class LLMClient {
     constructor() {
-        this.apiKey = sessionStorage.getItem('openai_key') || '';
+        this.apiKey = sessionStorage.getItem('llm_api_key') || '';
         this.model = sessionStorage.getItem('llm_model') || 'gpt-4o';
-        this.baseUrl = 'https://api.openai.com/v1/chat/completions';
+        this.baseUrl = sessionStorage.getItem('llm_base_url') || '';
+        this.protocol = sessionStorage.getItem('llm_protocol') || 'openai';
+    }
+
+    getEndpoint() {
+        if (this.baseUrl) {
+            // User provided custom base URL
+            const url = this.baseUrl.replace(/\/$/, '');
+            if (this.protocol === 'anthropic') {
+                return `${url}/v1/messages`;
+            }
+            return `${url}/v1/chat/completions`;
+        }
+        // Default endpoints
+        return this.protocol === 'anthropic'
+            ? 'https://api.anthropic.com/v1/messages'
+            : 'https://api.openai.com/v1/chat/completions';
+    }
+
+    getHeaders() {
+        if (this.protocol === 'anthropic') {
+            return {
+                'x-api-key': this.apiKey,
+                'anthropic-version': '2023-06-01',
+                'Content-Type': 'application/json'
+            };
+        }
+        return {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+        };
+    }
+
+    buildBody(messages, temperature) {
+        if (this.protocol === 'anthropic') {
+            // Anthropic uses 'user' / 'assistant' roles but combines system into a system param
+            const systemMsg = messages.find(m => m.role === 'system');
+            const userMsgs = messages.filter(m => m.role !== 'system');
+            const body = {
+                model: this.model,
+                max_tokens: 4096,
+                temperature,
+                messages: userMsgs.map(m => ({ role: m.role, content: m.content }))
+            };
+            if (systemMsg) body.system = systemMsg.content;
+            return body;
+        }
+        // OpenAI protocol
+        return {
+            model: this.model,
+            messages,
+            temperature,
+            response_format: { type: 'json_object' }
+        };
+    }
+
+    parseResponse(data) {
+        if (this.protocol === 'anthropic') {
+            // Anthropic: data.content[0].text
+            const text = data.content?.[0]?.text;
+            if (!text) throw new Error('Empty Anthropic response');
+            return text;
+        }
+        // OpenAI: data.choices[0].message.content
+        return data.choices?.[0]?.message?.content;
     }
 
     async call(messages, temperature = 0.3) {
-        if (!this.apiKey) throw new Error('OpenAI API key not configured');
+        if (!this.apiKey) throw new Error('API key not configured');
 
-        const res = await fetch(this.baseUrl, {
+        const res = await fetch(this.getEndpoint(), {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: this.model,
-                messages,
-                temperature,
-                response_format: { type: 'json_object' }
-            })
+            headers: this.getHeaders(),
+            body: JSON.stringify(this.buildBody(messages, temperature))
         });
 
         if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(`OpenAI API error: ${res.status} - ${err.error?.message || 'Unknown'}`);
+            const errText = await res.text().catch(() => 'Unknown');
+            throw new Error(`LLM API error: ${res.status} - ${errText}`);
         }
 
         const data = await res.json();
-        return data.choices[0].message.content;
+        const content = this.parseResponse(data);
+        if (!content) throw new Error('Empty LLM response');
+        return content;
     }
 
     async parseSurvey(text) {
@@ -59,7 +117,6 @@ ${text}`;
         try {
             return JSON.parse(result);
         } catch (e) {
-            // Try to extract JSON from markdown code block
             const match = result.match(/```json\n([\s\S]*?)\n```/);
             if (match) return JSON.parse(match[1]);
             throw new Error('Failed to parse LLM response as JSON');
@@ -90,7 +147,6 @@ Text/Abstract: ${text || 'Not provided'}`;
 
         try {
             const parsed = JSON.parse(result);
-            // Ensure all required keys exist
             return {
                 method: parsed.method || '',
                 training: parsed.training || '',
