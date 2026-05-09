@@ -439,7 +439,7 @@
       },
       "ablationStudy": [
         { "aspect": "Negative sampling", "finding": "16 negative samples sufficient; more does not help" },
-        "aspect": "Energy landscape", "finding": "Sharp energy minima correlate with precise action selection"
+        { "aspect": "Energy landscape", "finding": "Sharp energy minima correlate with precise action selection" }
       ]
     },
     "rl-vla": {
