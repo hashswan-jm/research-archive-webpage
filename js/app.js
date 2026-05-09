@@ -1,12 +1,16 @@
-// Global state
+// ───────────────────────────────
+// Global State
+// ───────────────────────────────
+let topics = [];
+let activeTopicId = null;
 let appData = null;
 let allPapers = [];
 let activeCategory = 'all';
 let searchQuery = '';
 let root = null;
 let svg, g, tree, zoom;
+let searchListenerAttached = false;
 
-// Colors
 const colors = {
     node: '#21262d',
     nodeStroke: '#58a6ff',
@@ -17,46 +21,104 @@ const colors = {
 };
 
 // ───────────────────────────────
-// Load Data
+// Entry: Load topics index
 // ───────────────────────────────
-async function loadData() {
+async function init() {
     try {
-        const res = await fetch('data/papers.json');
-        appData = await res.json();
-        initApp();
+        const res = await fetch('./data/topics.json');
+        topics = await res.json();
+        renderTabs();
+        bindGlobalEvents();
+
+        // Load first topic by default
+        if (topics.length > 0) {
+            await switchTopic(topics[0].id);
+        }
     } catch (err) {
-        document.getElementById('topic-title').textContent = 'Failed to load data';
+        document.getElementById('topic-title').textContent = 'Failed to load topics';
         console.error(err);
     }
 }
 
 // ───────────────────────────────
-// Init
+// Tab Navigation
 // ───────────────────────────────
-function initApp() {
-    // Header
+function renderTabs() {
+    const container = document.getElementById('topic-tabs');
+    container.innerHTML = topics.map(t => `
+        <button class="topic-tab ${t.id === activeTopicId ? 'active' : ''}" data-topic="${t.id}">
+            ${escapeHtml(t.name)}
+        </button>
+    `).join('');
+
+    container.querySelectorAll('.topic-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchTopic(btn.dataset.topic));
+    });
+}
+
+async function switchTopic(topicId) {
+    if (topicId === activeTopicId && appData) return;
+
+    activeTopicId = topicId;
+    const topic = topics.find(t => t.id === topicId);
+    if (!topic) return;
+
+    // Update tab UI
+    document.querySelectorAll('.topic-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.topic === topicId);
+    });
+
+    // Reset filters
+    activeCategory = 'all';
+    searchQuery = '';
+    document.getElementById('search-input').value = '';
+
+    // Load topic data
+    try {
+        const res = await fetch('./' + topic.file);
+        appData = await res.json();
+        loadTopicUI();
+    } catch (err) {
+        document.getElementById('topic-title').textContent = 'Failed to load topic data';
+        console.error(err);
+    }
+}
+
+// ───────────────────────────────
+// Load Topic UI
+// ───────────────────────────────
+function loadTopicUI() {
+    // Topic bar
     document.getElementById('topic-title').textContent = appData.topic;
     const s = appData.survey;
     document.getElementById('survey-info').innerHTML = `
         <span class="survey-tag">Survey</span>
-        <span>${s.title} (${s.year})</span>
-        <span>${s.authors.join(', ')}</span>
+        <span>${escapeHtml(s.title)} (${s.year})</span>
+        <span>${escapeHtml(s.authors.join(', '))}</span>
         ${s.url ? `<a href="${s.url}" target="_blank">Paper Link →</a>` : ''}
     `;
 
     // Flatten papers
     allPapers = Object.values(appData.papers);
 
-    // Render
+    // Render components
     renderMindMap();
     renderFilters();
     renderPapers();
+}
 
+// ───────────────────────────────
+// Global Events (bind once)
+// ───────────────────────────────
+function bindGlobalEvents() {
     // Search
-    document.getElementById('search-input').addEventListener('input', e => {
-        searchQuery = e.target.value.toLowerCase();
-        renderPapers();
-    });
+    if (!searchListenerAttached) {
+        document.getElementById('search-input').addEventListener('input', e => {
+            searchQuery = e.target.value.toLowerCase();
+            renderPapers();
+        });
+        searchListenerAttached = true;
+    }
 
     // Modal close
     document.querySelector('.modal-close').addEventListener('click', closeModal);
@@ -77,7 +139,6 @@ function renderMindMap() {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // Clear
     container.innerHTML = '';
 
     svg = d3.select('#mindmap-container')
@@ -85,7 +146,6 @@ function renderMindMap() {
         .attr('width', width)
         .attr('height', height);
 
-    // Zoom
     zoom = d3.zoom()
         .scaleExtent([0.3, 3])
         .on('zoom', e => g.attr('transform', e.transform));
@@ -101,15 +161,14 @@ function renderMindMap() {
     root.x0 = 0;
     root.y0 = 0;
 
-    // Initial collapse: collapse nodes deeper than level 2
     root.descendants().forEach(d => {
         if (d.depth > 1) d._children = d.children;
         if (d.depth > 1) d.children = null;
     });
 
     updateMindMap(root);
+    centerMindMap();
 
-    // Handle resize
     window.addEventListener('resize', () => {
         const w = container.clientWidth;
         const h = container.clientHeight;
@@ -124,11 +183,8 @@ function updateMindMap(source) {
     const links = root.links();
 
     tree(root);
-
-    // Normalize for fixed depth
     nodes.forEach(d => { d.y = d.depth * 180; });
 
-    // ── Nodes ──
     const node = g.selectAll('g.node')
         .data(nodes, d => d.data.name);
 
@@ -174,7 +230,6 @@ function updateMindMap(source) {
     nodeExit.select('circle').attr('r', 0);
     nodeExit.select('text').style('fill-opacity', 0);
 
-    // ── Links ──
     const link = g.selectAll('path.link')
         .data(links, d => d.target.data.name);
 
@@ -195,7 +250,6 @@ function updateMindMap(source) {
         })
         .remove();
 
-    // Save positions
     nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
 }
 
@@ -258,7 +312,6 @@ function centerMindMap() {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // Compute bounds
     const nodes = root.descendants();
     const xExtent = d3.extent(nodes, d => d.x);
     const yExtent = d3.extent(nodes, d => d.y);
@@ -282,7 +335,6 @@ function centerMindMap() {
 }
 
 function highlightPapers(paperIds) {
-    // Clear previous highlights
     document.querySelectorAll('.paper-card.highlighted').forEach(c => c.classList.remove('highlighted'));
 
     paperIds.forEach(id => {
@@ -293,8 +345,6 @@ function highlightPapers(paperIds) {
         }
     });
 
-    // Also filter to show only these papers
-    // (optional: could auto-set filter, but highlight is enough)
     setTimeout(() => {
         document.querySelectorAll('.paper-card.highlighted').forEach(c => c.classList.remove('highlighted'));
     }, 3000);
@@ -351,10 +401,10 @@ function renderPapers() {
 
     grid.innerHTML = filtered.map(p => `
         <div class="paper-card" data-id="${p.id}">
-            <span class="card-category">${p.subcategory || p.category}</span>
+            <span class="card-category">${escapeHtml(p.subcategory || p.category)}</span>
             <h3>${escapeHtml(p.title)}</h3>
             <div class="card-authors">${escapeHtml(p.authors.join(', '))}</div>
-            <div class="card-meta">${p.venue} · ${p.year}</div>
+            <div class="card-meta">${escapeHtml(p.venue)} · ${p.year}</div>
             <div class="card-highlight">${escapeHtml(p.highlight)}</div>
             <div class="card-footer">
                 ${p.github ? `<a href="${p.github}" target="_blank" onclick="event.stopPropagation();">GitHub</a>` : ''}
@@ -509,4 +559,4 @@ function formatKey(key) {
 }
 
 // Start
-loadData();
+init();

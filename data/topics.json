@@ -1,0 +1,14 @@
+[
+  {
+    "id": "diffusion",
+    "name": "Diffusion Models",
+    "file": "data/diffusion.json",
+    "description": "Diffusion Models for Image Generation"
+  },
+  {
+    "id": "llm",
+    "name": "Large Language Models",
+    "file": "data/llm.json",
+    "description": "LLM Architecture, Training and Alignment"
+  }
+]

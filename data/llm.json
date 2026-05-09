@@ -1,0 +1,397 @@
+{
+  "topic": "Large Language Models: A Survey",
+  "survey": {
+    "title": "A Survey of Large Language Models",
+    "authors": ["Wayne Xin Zhao", "Kun Zhou", "Junyi Li", "et al."],
+    "year": 2023,
+    "venue": "arXiv",
+    "url": "https://arxiv.org/abs/2303.18223",
+    "abstract": "Large language models (LLMs) have drawn a lot of attention due to their strong performance on a wide range of natural language processing tasks. This survey provides a comprehensive review of the recent advances in LLMs."
+  },
+  "mindmap": {
+    "name": "Large Language Models",
+    "children": [
+      {
+        "name": "Architecture",
+        "children": [
+          { "name": "Decoder-only", "paperIds": ["gpt3", "llama", "llama2"] },
+          { "name": "Encoder-Decoder", "paperIds": ["t5", "ul2"] },
+          { "name": "Mixture of Experts", "paperIds": ["switch-transformer", "mixtral"] }
+        ]
+      },
+      {
+        "name": "Pre-training",
+        "children": [
+          { "name": "Data Engineering", "paperIds": ["pile", "refinedweb", "dolma"] },
+          { "name": "Training Stability", "paperIds": ["gpt3", "bloom"] },
+          { "name": "Efficient Training", "paperIds": ["megatron-lm", "deepspeed"] }
+        ]
+      },
+      {
+        "name": "Alignment",
+        "children": [
+          { "name": "Instruction Tuning", "paperIds": ["flan", "alpaca", "vicuna"] },
+          { "name": "RLHF", "paperIds": ["instructgpt", "rlhf-paper", "dpo"] },
+          { "name": "Constitutional AI", "paperIds": ["constitutional-ai"] }
+        ]
+      },
+      {
+        "name": "Capabilities",
+        "children": [
+          { "name": "In-Context Learning", "paperIds": ["gpt3", "icl-theory"] },
+          { "name": "Chain-of-Thought", "paperIds": ["cot", "zero-shot-cot", "tot"] },
+          { "name": "Tool Use", "paperIds": ["toolformer", "gorilla"] }
+        ]
+      }
+    ]
+  },
+  "papers": {
+    "gpt3": {
+      "id": "gpt3",
+      "title": "Language Models are Few-Shot Learners",
+      "authors": ["Tom B Brown", "Benjamin Mann", "Nick Ryder", "et al."],
+      "year": 2020,
+      "venue": "NeurIPS",
+      "category": "Architecture",
+      "subcategory": "Decoder-only",
+      "highlight": "GPT-3 with 175B parameters demonstrated strong few-shot learning capabilities without gradient updates, sparking the era of large language models.",
+      "contribution": "Scaled autoregressive language models to 175B parameters. Demonstrated emergent few-shot learning where the model performs tasks given only natural language prompts and examples. Showed that model performance scales smoothly with model size, dataset size, and compute.",
+      "modelDiagram": "",
+      "github": "",
+      "trainingSetting": {
+        "optimizer": "Adam",
+        "learningRate": "0.00006 (warmup + cosine decay)",
+        "batchSize": "3.2M tokens",
+        "parameters": "175B",
+        "contextLength": 2048,
+        "trainingTokens": "300B",
+        "compute": "~3640 PF-days"
+      },
+      "datasets": ["Common Crawl (filtered)", "WebText2", "Books1", "Books2", "Wikipedia"],
+      "metrics": {
+        "LAMBADA": { "accuracy": "86.4%" },
+        "HellaSwag": { "accuracy": "78.9%" },
+        "TriviaQA": { "accuracy": "71.2%" }
+      },
+      "ablationStudy": [
+        { "aspect": "Model size", "finding": "Few-shot performance improves smoothly and predictably with model scale" },
+        { "aspect": "Context examples", "finding": "Performance increases with number of in-context examples up to model context limit" },
+        { "aspect": "Prompt formatting", "finding": "Model highly sensitive to prompt formatting and example ordering" }
+      ]
+    },
+    "llama": {
+      "id": "llama",
+      "title": "LLaMA: Open and Efficient Foundation Language Models",
+      "authors": ["Hugo Touvron", "Thibaut Lavril", "Gautier Izacard", "et al."],
+      "year": 2023,
+      "venue": "arXiv",
+      "category": "Architecture",
+      "subcategory": "Decoder-only",
+      "highlight": "Open foundation models (7B-65B) trained on publicly available data only, showing that smaller models trained longer can match larger proprietary models.",
+      "contribution": "Released open weights for 7B, 13B, 33B, and 65B parameter models. Trained only on publicly available datasets. Demonstrated that smaller models trained on more tokens outperform larger models trained on fewer tokens (Chinchilla scaling laws).",
+      "modelDiagram": "",
+      "github": "https://github.com/facebookresearch/llama",
+      "trainingSetting": {
+        "optimizer": "AdamW",
+        "learningRate": "1.5e-4 (warmup + cosine decay to 1/10)",
+        "batchSize": "4M tokens",
+        "parameters": "65B",
+        "contextLength": 2048,
+        "trainingTokens": "1.4T",
+        "weightDecay": 0.1,
+        "gradientClipping": 1.0
+      },
+      "datasets": ["Common Crawl", "C4", "Github", "Wikipedia", "Books", "ArXiv", "StackExchange"],
+      "metrics": {
+        "MMLU": { "accuracy": "63.4% (65B)" },
+        "HellaSwag": { "accuracy": "84.2% (65B)" },
+        "BoolQ": { "accuracy": "79.8% (65B)" }
+      },
+      "ablationStudy": [
+        { "aspect": "Training tokens", "finding": "Training longer on more data more important than scaling parameters (Chinchilla)" },
+        { "aspect": "SwiGLU vs ReLU", "finding": "SwiGLU activation improves perplexity over ReLU" },
+        { "aspect": "RMSNorm", "finding": "Pre-normalization with RMSNorm stabilizes training at scale" }
+      ]
+    },
+    "llama2": {
+      "id": "llama2",
+      "title": "Llama 2: Open Foundation and Fine-Tuned Chat Models",
+      "authors": ["Hugo Touvron", "Louis Martin", "Kevin Stone", "et al."],
+      "year": 2023,
+      "venue": "arXiv",
+      "category": "Architecture",
+      "subcategory": "Decoder-only",
+      "highlight": "Improved open LLMs (7B-70B) with 40% more training data, longer context, and Grouped-Query Attention for inference efficiency.",
+      "contribution": "Released base and chat-tuned models up to 70B. Introduced Grouped-Query Attention (GQA) for faster inference. Trained on 2T tokens with better data cleaning. Released extensive safety evaluations and red-teaming reports.",
+      "modelDiagram": "",
+      "github": "https://github.com/facebookresearch/llama",
+      "trainingSetting": {
+        "optimizer": "AdamW",
+        "learningRate": "cosine decay to 10% of max",
+        "batchSize": "4M tokens",
+        "parameters": "70B",
+        "contextLength": 4096,
+        "trainingTokens": "2T",
+        "attention": "Grouped-Query Attention (GQA)"
+      },
+      "datasets": ["New publicly available online data sources"],
+      "metrics": {
+        "MMLU": { "accuracy": "68.9% (70B)" },
+        "HumanEval": { "pass@1": "29.9% (70B)" },
+        "MATH": { "accuracy": "13.5% (70B)" }
+      },
+      "ablationStudy": [
+        { "aspect": "GQA", "finding": "GQA maintains quality while reducing KV-cache memory by ~30%" },
+        { "aspect": "Ghost attention", "finding": "Technique to maintain multi-turn instruction adherence" },
+        { "aspect": "Safety tuning", "finding": "Safety fine-tuning slightly hurts helpfulness scores but dramatically reduces harmful outputs" }
+      ]
+    },
+    "t5": {
+      "id": "t5",
+      "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+      "authors": ["Colin Raffel", "Noam Shazeer", "Adam Roberts", "et al."],
+      "year": 2020,
+      "venue": "JMLR",
+      "category": "Architecture",
+      "subcategory": "Encoder-Decoder",
+      "highlight": "T5 reframes all NLP tasks as text-to-text problems and systematically studies the effects of architecture, pre-training objectives, and datasets.",
+      "contribution": "Proposed a unified text-to-text framework where every task is cast as text generation. Introduced the C4 dataset. Conducted extensive ablations on architecture, unsupervised objectives, and fine-tuning approaches.",
+      "modelDiagram": "",
+      "github": "https://github.com/google-research/text-to-text-transfer-transformer",
+      "trainingSetting": {
+        "optimizer": "AdaFactor",
+        "learningRate": "inverse square root decay",
+        "batchSize": "2^20 tokens",
+        "parameters": "11B (largest variant)",
+        "encoderDecoder": true,
+        "pretrainingSteps": "1M"
+      },
+      "datasets": ["C4 (Colossal Clean Crawled Corpus)"],
+      "metrics": {
+        "GLUE": { "score": "89.7 (T5-11B)" },
+        "SuperGLUE": { "score": "89.3 (T5-11B)" },
+        "SQuAD": { "EM": "91.2" }
+      },
+      "ablationStudy": [
+        { "aspect": "Denoising objective", "finding": "Span corruption (replace random spans with single mask token) outperforms BERT-style MLM" },
+        { "aspect": "Encoder-decoder vs decoder-only", "finding": "Encoder-decoder superior for fine-tuning; decoder-only competitive for generation" },
+        { "aspect": "Pre-training data size", "finding": "Performance improves log-linearly with pre-training dataset size" }
+      ]
+    },
+    "switch-transformer": {
+      "id": "switch-transformer",
+      "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+      "authors": ["William Fedus", "Barret Zoph", "Noam Shazeer"],
+      "year": 2022,
+      "venue": "JMLR",
+      "category": "Architecture",
+      "subcategory": "Mixture of Experts",
+      "highlight": "Switch Transformer scales to 1.6T parameters using sparse Mixture-of-Experts with each token routing to only 1 expert, achieving 7x pre-training speedup.",
+      "contribution": "Simplified MoE by routing each token to a single expert (top-1 routing). Scaled to 1.6T parameters with same computational cost as a 10B dense model. Demonstrated positive transfer across multilingual tasks.",
+      "modelDiagram": "",
+      "github": "",
+      "trainingSetting": {
+        "optimizer": "Adafactor",
+        "learningRate": "warmup + linear decay",
+        "batchSize": "1M tokens",
+        "parameters": "1.6T (sparse)",
+        "experts": 2048,
+        "expertCapacity": 1.0
+      },
+      "datasets": ["C4"],
+      "metrics": {
+        "T5-XXL baseline": { "speedup": "7x faster pre-training" },
+        "Negative log perplexity": { "improvement": "4x over T5-XXL" }
+      },
+      "ablationStudy": [
+        { "aspect": "Top-1 vs top-2 routing", "finding": "Top-1 routing sufficient; top-2 adds complexity without clear benefit" },
+        { "aspect": "Expert capacity", "finding": "Capacity factor 1.0 balances quality and training stability" },
+        { "aspect": "Load balancing loss", "finding": "Essential for preventing expert collapse; too high hurts quality" }
+      ]
+    },
+    "mixtral": {
+      "id": "mixtral",
+      "title": "Mixtral of Experts",
+      "authors": ["Albert Q Jiang", "Alexandre Sablayrolles", "Antoine Roux", "et al."],
+      "year": 2024,
+      "venue": "arXiv",
+      "category": "Architecture",
+      "subcategory": "Mixture of Experts",
+      "highlight": "Mixtral 8x7B: A sparse MoE model that outperforms Llama 2 70B while being 6x faster at inference, using only 2 active experts per token.",
+      "contribution": "Released open-weight sparse MoE with 8 experts (46.7B total, 12.9B active). Each layer routes to top-2 experts. Outperformed Llama 2 70B on most benchmarks while using fewer active parameters.",
+      "modelDiagram": "",
+      "github": "https://github.com/mistralai/mistral-inference",
+      "trainingSetting": {
+        "optimizer": "AdamW",
+        "parameters": "46.7B total (12.9B active)",
+        "contextLength": 32768,
+        "experts": 8,
+        "activeExperts": 2,
+        "router": "Softmax gating"
+      },
+      "datasets": ["Multilingual web corpus"],
+      "metrics": {
+        "MMLU": { "accuracy": "70.6%" },
+        "HellaSwag": { "accuracy": "86.7%" },
+        "WinoGrande": { "accuracy": "81.1%" }
+      },
+      "ablationStudy": [
+        { "aspect": "Top-k routing", "finding": "Top-2 experts provides best quality/latency tradeoff" },
+        { "aspect": "Sliding window attention", "finding": "Allows 32K context with linear attention complexity beyond window" }
+      ]
+    },
+    "instructgpt": {
+      "id": "instructgpt",
+      "title": "Training language models to follow instructions with human feedback",
+      "authors": ["Long Ouyang", "Jeffrey Wu", "Xu Jiang", "et al."],
+      "year": 2022,
+      "venue": "NeurIPS",
+      "category": "Alignment",
+      "subcategory": "RLHF",
+      "highlight": "InstructGPT: Fine-tuned GPT-3 with supervised fine-tuning and RLHF to better follow instructions, preferred by human evaluators over 100x larger GPT-3.",
+      "contribution": "Proposed the RLHF pipeline: SFT on human demonstrations, then train reward model from human preferences, then optimize policy with PPO against the reward model. 1.3B InstructGPT preferred over 175B GPT-3. Introduced the important insight that alignment can trade off some capabilities for better usefulness.",
+      "modelDiagram": "",
+      "github": "",
+      "trainingSetting": {
+        "stage1": "Supervised Fine-Tuning on ~12K prompt-response pairs",
+        "stage2": "Reward model trained on ~33K comparison labels",
+        "stage3": "PPO optimization with KL divergence constraint",
+        "klCoefficient": 0.02,
+        "rewardModel": "GPT-3 6B"
+      },
+      "datasets": ["User-submitted prompts via API", "Labeler-written demonstrations"],
+      "metrics": {
+        "Human preference (vs GPT-3)": { "winRate": "85%" },
+        "Truthfulness": { "improvement": "+50% over GPT-3" },
+        "Toxicity": { "reduction": "25% reduction" }
+      },
+      "ablationStudy": [
+        { "aspect": "KL penalty", "finding": "KL coefficient 0.02 prevents reward hacking while maintaining gains" },
+        { "aspect": "Reward model size", "finding": "6B reward model sufficient; scaling beyond doesn't help much" },
+        { "aspect": "SFT-only vs RLHF", "finding": "RLHF significantly outperforms SFT-only in human preference" }
+      ]
+    },
+    "dpo": {
+      "id": "dpo",
+      "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "authors": ["Rafael Rafailov", "Archit Sharma", "Eric Mitchell", "et al."],
+      "year": 2024,
+      "venue": "NeurIPS",
+      "category": "Alignment",
+      "subcategory": "RLHF",
+      "highlight": "DPO eliminates the need for explicit reward modeling and PPO, directly optimizing the LLM on preference data with a simple classification loss.",
+      "contribution": "Derived that the Bradley-Terry reward model can be reparameterized in terms of the optimal policy, eliminating separate reward model training. Proposed Direct Preference Optimization as a simple alternative to RLHF/PPO. Showed comparable or better performance with simpler implementation.",
+      "modelDiagram": "",
+      "github": "https://github.com/eric-mitchell/direct-preference-optimization",
+      "trainingSetting": {
+        "optimizer": "AdamW",
+        "learningRate": "1e-6",
+        "batchSize": 32,
+        "beta": 0.1,
+        "epochs": 1,
+        "referenceModel": "Frozen SFT model"
+      },
+      "datasets": ["Anthropic HH-RLHF", "TL;DR summarization", "SHP"],
+      "metrics": {
+        "AlpacaEval (GPT-4 judge)": { "winRate": "Comparable to PPO" },
+        "MT-bench": { "score": "Within 1-2 points of PPO" },
+        "Training stability": { "comparison": "More stable than PPO" }
+      },
+      "ablationStudy": [
+        { "aspect": "Beta parameter", "finding": "Beta controls KL divergence; 0.1 works well across tasks" },
+        { "aspect": "Reference model", "finding": "Using frozen SFT model as reference prevents mode collapse" },
+        { "aspect": "Implicit reward", "finding": "Implicit DPO reward correlates well with explicit reward model" }
+      ]
+    },
+    "flan": {
+      "id": "flan",
+      "title": "Finetuned Language Models Are Zero-Shot Learners",
+      "authors": ["Jason Wei", "Maarten Bosma", "Vincent Zhao", "et al."],
+      "year": 2022,
+      "venue": "ICLR",
+      "category": "Alignment",
+      "subcategory": "Instruction Tuning",
+      "highlight": "FLAN: Fine-tuning a language model on a collection of datasets phrased as instructions substantially improves zero-shot generalization to unseen tasks.",
+      "contribution": "Introduced instruction tuning: fine-tuning on diverse NLP tasks expressed via natural language instructions. Compiled FLAN dataset with 62 NLP datasets. Demonstrated strong zero-shot generalization to held-out task types.",
+      "modelDiagram": "",
+      "github": "https://github.com/google-research/FLAN",
+      "trainingSetting": {
+        "baseModel": "LaMDA-PT (137B)",
+        "instructionDatasets": 62,
+        "templatesPerDataset": "~10",
+        "trainingSteps": "30K",
+        "learningRate": "constant then decay"
+      },
+      "datasets": ["62 NLP datasets grouped into 12 task clusters"],
+      "metrics": {
+        "MMLU (zero-shot)": { "accuracy": "55.4%" },
+        "BBH": { "accuracy": "Surpasses zero-shot GPT-3" },
+        "Held-out tasks": { "generalization": "Strong improvement over base model" }
+      },
+      "ablationStudy": [
+        { "aspect": "Number of task clusters", "finding": "More diverse task clusters improve generalization; diminishing returns after ~10 clusters" },
+        { "aspect": "Prompt engineering", "finding": "Adding chain-of-thought examples to instructions improves reasoning" },
+        { "aspect": "Scale", "finding": "Instruction tuning benefits increase with model size (emergent at 8B+)" }
+      ]
+    },
+    "cot": {
+      "id": "cot",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "authors": ["Jason Wei", "Xuezhi Wang", "Dale Schuurmans", "et al."],
+      "year": 2022,
+      "venue": "NeurIPS",
+      "category": "Capabilities",
+      "subcategory": "Chain-of-Thought",
+      "highlight": "Chain-of-Thought prompting: simply adding 'Let's think step by step' examples dramatically improves LLM performance on complex reasoning tasks.",
+      "contribution": "Proposed chain-of-thought prompting: providing step-by-step reasoning examples in the prompt. Showed large emergent gains on arithmetic, commonsense, and symbolic reasoning tasks. Demonstrated that CoT benefits scale strongly with model size.",
+      "modelDiagram": "",
+      "github": "",
+      "trainingSetting": {
+        "promptType": "Few-shot with reasoning chains",
+        "examples": "8 per prompt",
+        "annotation": "Human-written reasoning chains"
+      },
+      "datasets": ["GSM8K", "MathQA", "SVAMP", "StrategyQA", "BIG-bench"],
+      "metrics": {
+        "GSM8K (PaLM 540B)": { "accuracy": "74% (up from 17%)" },
+        "MATH": { "accuracy": "50.3% (PaLM 540B)" },
+        "StrategyQA": { "accuracy": "75.3%" }
+      },
+      "ablationStudy": [
+        { "aspect": "Model size", "finding": "CoT only helps at scale (>100B parameters); hurts smaller models" },
+        { "aspect": "Example quality", "finding": "Correct reasoning chains essential; incorrect examples propagate errors" },
+        { "aspect": "Prompt format", "finding": "Explicit 'Let's think step by step' phrase critical for zero-shot CoT" }
+      ]
+    },
+    "toolformer": {
+      "id": "toolformer",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "authors": ["Timo Schick", "Jane Dwivedi-Yu", "Roberto Dessi", "et al."],
+      "year": 2023,
+      "venue": "NeurIPS",
+      "category": "Capabilities",
+      "subcategory": "Tool Use",
+      "highlight": "Toolformer teaches LLMs to decide when and how to call external APIs (calculator, search, translator, calendar) via self-supervised learning.",
+      "contribution": "Proposed a self-supervised method to teach LLMs API usage. The model generates API calls, executes them, and keeps only calls that reduce perplexity. Demonstrated tool use for calculator, QA system, search engine, translator, and calendar.",
+      "modelDiagram": "",
+      "github": "https://github.com/facebookresearch/Metaseq/tree/main/projects/Toolformer",
+      "trainingSetting": {
+        "baseModel": "GPT-J (6.7B)",
+        "method": "Self-supervised API call filtering",
+        "filterThreshold": "Perplexity reduction",
+        "apis": "Calculator, WikiSearch, MT, Calendar, QA"
+      },
+      "datasets": ["CCNet subset"],
+      "metrics": {
+        "GSM8K": { "accuracy": "Improvement with calculator API" },
+        "MLQA": { "accuracy": "Improvement with translation API" },
+        "SQuAD": { "accuracy": "Improvement with QA/search APIs" }
+      },
+      "ablationStudy": [
+        { "aspect": "Filtering criterion", "finding": "Perplexity reduction most effective filter; random sampling hurts performance" },
+        { "aspect": "API diversity", "finding": "Training with multiple APIs simultaneously improves each individual API use" },
+        { "aspect": "Sampling weight", "finding": "Sampling API calls proportional to predicted usefulness improves precision" }
+      ]
+    }
+  }
+}

@@ -38,7 +38,7 @@ body {
 .site-header {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    padding: 32px 24px;
+    padding: 24px 24px 0;
 }
 
 .header-content {
@@ -47,13 +47,74 @@ body {
 }
 
 .site-header h1 {
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     background: linear-gradient(90deg, var(--accent), var(--accent-hover));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+/* Topic Tabs */
+.topic-tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    border-bottom: none;
+}
+
+.topic-tab {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: var(--transition);
+    position: relative;
+}
+
+.topic-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.topic-tab.active {
+    color: var(--accent);
+    background: var(--bg-primary);
+}
+
+.topic-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+}
+
+/* Topic Bar */
+.topic-bar {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 20px 24px;
+}
+
+.topic-bar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.topic-bar h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-primary);
 }
 
 .survey-info {
