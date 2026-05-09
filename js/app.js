@@ -33,6 +33,7 @@ class App {
         llm.model = sessionStorage.getItem('llm_model') || 'gpt-4o';
         llm.baseUrl = sessionStorage.getItem('llm_base_url') || '';
         llm.protocol = sessionStorage.getItem('llm_protocol') || 'openai';
+        llm.proxyUrl = sessionStorage.getItem('llm_proxy_url') || '';
     }
 
     async loadTabs() {
@@ -391,6 +392,7 @@ class App {
             document.getElementById('github-repo').value = sessionStorage.getItem('github_repo') || 'hashswan-jm/research-archive-webpage';
             document.getElementById('llm-api-key').value = sessionStorage.getItem('llm_api_key') || '';
             document.getElementById('llm-base-url').value = sessionStorage.getItem('llm_base_url') || '';
+            document.getElementById('llm-proxy-url').value = sessionStorage.getItem('llm_proxy_url') || '';
             document.getElementById('llm-model').value = sessionStorage.getItem('llm_model') || 'gpt-4o';
 
             const protocol = sessionStorage.getItem('llm_protocol') || 'openai';
@@ -427,6 +429,7 @@ class App {
         const ghRepo = document.getElementById('github-repo').value.trim();
         const apiKey = document.getElementById('llm-api-key').value.trim();
         const baseUrl = document.getElementById('llm-base-url').value.trim();
+        const proxyUrl = document.getElementById('llm-proxy-url').value.trim();
         const model = document.getElementById('llm-model').value.trim();
         const protocol = document.querySelector('input[name="llm-protocol"]:checked')?.value || 'openai';
 
@@ -441,6 +444,9 @@ class App {
         if (baseUrl) sessionStorage.setItem('llm_base_url', baseUrl);
         else sessionStorage.removeItem('llm_base_url');
 
+        if (proxyUrl) sessionStorage.setItem('llm_proxy_url', proxyUrl);
+        else sessionStorage.removeItem('llm_proxy_url');
+
         sessionStorage.setItem('llm_model', model);
         sessionStorage.setItem('llm_protocol', protocol);
 
@@ -450,6 +456,7 @@ class App {
         llm.apiKey = apiKey;
         llm.model = model;
         llm.baseUrl = baseUrl;
+        llm.proxyUrl = proxyUrl;
         llm.protocol = protocol;
 
         this.closeSettings();

@@ -5,6 +5,7 @@ class LLMClient {
         this.model = sessionStorage.getItem('llm_model') || 'gpt-4o';
         this.baseUrl = sessionStorage.getItem('llm_base_url') || '';
         this.protocol = sessionStorage.getItem('llm_protocol') || 'openai';
+        this.proxyUrl = sessionStorage.getItem('llm_proxy_url') || '';
     }
 
     getEndpoint() {
@@ -73,10 +74,23 @@ class LLMClient {
     async call(messages, temperature = 0.3) {
         if (!this.apiKey) throw new Error('API key not configured');
 
-        const res = await fetch(this.getEndpoint(), {
+        const endpoint = this.getEndpoint();
+        const headers = this.getHeaders();
+        const body = JSON.stringify(this.buildBody(messages, temperature));
+
+        let url = endpoint;
+        let fetchHeaders = headers;
+        let fetchBody = body;
+
+        if (this.proxyUrl) {
+            const proxy = this.proxyUrl.replace(/\/$/, '');
+            url = `${proxy}/?target=${encodeURIComponent(endpoint)}`;
+        }
+
+        const res = await fetch(url, {
             method: 'POST',
-            headers: this.getHeaders(),
-            body: JSON.stringify(this.buildBody(messages, temperature))
+            headers: fetchHeaders,
+            body: fetchBody
         });
 
         if (!res.ok) {

@@ -44,6 +44,11 @@
                     <small>Leave empty to use default endpoint</small>
                 </div>
                 <div class="form-group">
+                    <label>Proxy URL (optional)</label>
+                    <input type="text" id="llm-proxy-url" placeholder="http://localhost:5000">
+                    <small>For CORS issues: run proxy.py locally and put http://localhost:5000 here</small>
+                </div>
+                <div class="form-group">
                     <label>LLM Model</label>
                     <input type="text" id="llm-model" placeholder="gpt-4o or kimi-code" value="gpt-4o">
                 </div>
